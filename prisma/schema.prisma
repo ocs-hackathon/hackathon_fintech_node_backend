@@ -8,14 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model AdminConn {
-  id             Int       @id @default(autoincrement())
-  userId         Int
-  accountId      Int
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  account        RealBankAccount        @relation(fields: [accountId], references: [id], onDelete: Cascade)
-}
-
 model User {
   id             Int       @id @default(autoincrement())
   role           String
@@ -35,15 +27,25 @@ model User {
   // Relations
   offers              Offer[]
   borrowings          Borrowed[]
-  account             Account
+  account             Account[]
   transactionsSent    Transaction[] @relation("SenderTransactions")
   transactionsReceived Transaction[] @relation("ReceiverTransactions")
-  issuedCurrencies    IssuedCurrency[] @relation("Issuer")
+  issuedSender    IssuedCurrency[] @relation("Issuer")
+  issuedReceiver    IssuedCurrency[] @relation("Receiver")
   resetPass           ResetToken[]
   passwordStat        PasswordStatus[]
   realBankAccounts    RealBankAccount[]
   tempKYC             KYCTemp[]
-  adminUser           AdminConn[]
+  user           AdminConn[]
+}
+
+model AdminConn {
+  id             Int       @id @default(autoincrement())
+  name           String?
+  userId         Int       @unique
+  accountId      Int
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account        RealBankAccount        @relation(fields: [accountId], references: [id], onDelete: Cascade)
 }
 
 model KYCTemp {
@@ -63,7 +65,7 @@ model KYCTemp {
 
 model RealBankAccount {
   id             Int      @id @default(autoincrement())
-  accountNumber  String?   @unique
+  accountNumber  String?  @unique
   bankName       String?
   balanceETB     Decimal  @default(100000.0)
   userId         Int?     
@@ -97,7 +99,7 @@ model Account {
   seedIv             String
   xrpBalance         Float     @default(0.0)
   issuedCurrencyBalance Float  @default(0.0)
-  userId             Int
+  userId             Int       @unique
   user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -120,7 +122,7 @@ model IssuedCurrency {
   maxAmount      Float
   creationDate   DateTime  @default(now())
   userIssuer     User?     @relation("Issuer", fields: [issuerId], references: [id], onDelete: SetNull)
-  userReceiver   User?     @relation(fields: [receiverId], references: [id], onDelete: SetNull)
+  userReceiver   User?     @relation("Receiver", fields: [receiverId], references: [id], onDelete: SetNull)
 }
 
 model PasswordStatus {

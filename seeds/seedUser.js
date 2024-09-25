@@ -1,10 +1,12 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const { hashPassword } = require("../utils/passwordUtils");
-const faker = require("faker");
+const { faker } = require('@faker-js/faker');
 const crypto = require("crypto");
 const xrpl = require("xrpl");
-const fetch = require("node-fetch");
+
+const fetch = (...args) =>
+  import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
 const FAUCET_URL = "https://faucet.altnet.rippletest.net/accounts";
 
@@ -38,20 +40,20 @@ const getRandomBalance = () => {
 const seedUsers = async () => {
   try {
     for (let i = 0; i < 50; i++) {
-      const fullName = faker.name.findName();
+      const fullName = faker.person.fullName();
       const email = faker.internet.email(fullName.split(" ")[0]);
       const password = await hashPassword(`password${i}`);
-      const address = faker.address.streetAddress();
-      const phoneNumber = faker.phone.phoneNumber();
+      const address = faker.location.streetAddress();
+      const phoneNumber = faker.phone.number();
       const status = getRandomStatus();
       const bankName = getRandomBank();
       const accountNumber = getBankAccountNumber(bankName);
       const balance = getRandomBalance();
-      const idFile = "/path/to/idFile.pdf";
-      const bankStatement = "/path/to/bankStatement.pdf";
+      const idFile = "uploads/idFile2.pdf";
+      const bankStatement = "uploads/bankStatement2.pdf";
 
       const existingUser = await prisma.user.findUnique({
-        where: { email },
+        where: { id: i + 2 },
       });
 
       if (!existingUser) {
@@ -129,7 +131,6 @@ const seedUsers = async () => {
             userId: user.id,
           },
         });
-
         console.log(`Created user: ${user.fullName} with XRP account.`);
       } else {
         console.log(`User already exists: ${existingUser.fullName}`);

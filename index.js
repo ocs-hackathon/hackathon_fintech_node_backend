@@ -1,5 +1,5 @@
 const express = require('express');
-const path = require('path')
+const path = require('path');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 require('dotenv').config();
@@ -12,20 +12,31 @@ const corsOptions = {
   origin: '*'
 };
 
-const seedUser = require('./seeds/seedUser')
-const trustedEntity = require('./seeds/trustedEntity')
-const account = require('./routes/accountRoutes')
-const transaction = require('./routes/transaction')
-const createTLTransfer = require('./routes/createTLTransfer')
-const user = require('./routes/user')
-const offer = require('./routes/offer')
-const admin = require ('./routes/admin')
+// Importing seed functions and routes
+const seedUser = require('./seeds/seedUser');
+const trustedEntity = require('./seeds/trustedEntity');
+const account = require('./routes/accountRoutes');
+const transaction = require('./routes/transaction');
+const createTLTransfer = require('./routes/createTLTransfer');
+const user = require('./routes/user');
+const offer = require('./routes/offer');
+const admin = require('./routes/admin');
 
-trustedEntity()
-seedUser()
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+const initializeData = async () => {
+  try {
+    await trustedEntity();
+    await delay(2000);
+    await seedUser();
+  } catch (error) {
+    console.error('Error during seeding:', error);
+  }
+};
+
+initializeData();
 
 app.use(cors(corsOptions));
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
@@ -35,12 +46,12 @@ app.get('/', (req, res) => {
   console.log(req);
 });
 
-app.use('/account', account)
-app.use('/transaction', transaction)
-app.use('/trustline', createTLTransfer)
-app.use('/user', user)
-app.use('/offer', offer)
-app.use('/admin', admin)
+app.use('/account', account);
+app.use('/transaction', transaction);
+app.use('/trustline', createTLTransfer);
+app.use('/user', user);
+app.use('/offer', offer);
+app.use('/admin', admin);
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}/`);

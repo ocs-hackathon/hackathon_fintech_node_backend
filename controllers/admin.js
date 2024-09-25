@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { hashPassword } = require('../utils/passwordUtils');
+const nodemailer = require('nodemailer')
 
 const generateRandomPassword = (length = 12) => {
   const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
@@ -13,14 +14,13 @@ const generateRandomPassword = (length = 12) => {
 };
 
 const sendEmail = async (email, username, temporaryPassword) => {
-  const nodemailer = require('nodemailer');
 
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 465,
     secure: true,
     auth: {
-      user: "nahom6297@gmail.com",
+      user: "exopain2930@gmail.com",
       pass: process.env.EMAIL_PASSWORD,
     },
   });

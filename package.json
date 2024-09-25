@@ -27,6 +27,7 @@
     "xrpl": "^4.0.0"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.0.2",
     "prisma": "^5.19.1"
   }
 }

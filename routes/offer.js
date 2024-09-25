@@ -1,5 +1,5 @@
 const express = require('express');
-const { getAllOffers, deleteOffer, updateOffer } = require('../controllers/offer');
+const { getAllOffers, deleteOffer, updateOffer, createOffer } = require('../controllers/offer');
 const router = express.Router();
 
 router.post('/createOffer/:id', createOffer);

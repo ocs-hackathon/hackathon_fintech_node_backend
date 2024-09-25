@@ -10,7 +10,7 @@ const sendEmail = async (email, username, isApproved) => {
     port: 465,
     secure: true,
     auth: {
-      user: "nahom6297@gmail.com",
+      user: "exopain2930@gmail.com",
       pass: process.env.EMAIL_PASSWORD,
     },
   });
@@ -24,7 +24,7 @@ const sendEmail = async (email, username, isApproved) => {
     : `Hello ${username},\n\nWe regret to inform you that your account application was rejected. If you believe this was a mistake, please contact our support team.\n\nBest regards,\nInculFi`;
 
   const mailOptions = {
-    from: "nahom6297@gmail.com",
+    from: "exopain2930@gmail.com",
     to: email,
     subject: subject,
     text: messageText,

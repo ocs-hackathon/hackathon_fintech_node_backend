@@ -3,7 +3,10 @@ const { hashPassword } = require('../utils/passwordUtils');
 const prisma = new PrismaClient();
 const crypto = require('crypto');
 const xrpl = require('xrpl');
-const fetch = require('node-fetch');
+
+// Dynamic import for node-fetch
+const fetch = (...args) =>
+  import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
 const FAUCET_URL = "https://faucet.altnet.rippletest.net/accounts";
 
@@ -38,10 +41,14 @@ const trustedEntity = async () => {
                     }
                 }
             });
-            const AdminRealBank = await prisma.adminBank.create({
+
+            const realBank = await prisma.realBankAccount.findFirst({
+                where:{userId: trustedUser.id}
+            })
+            const AdminRealBank = await prisma.adminConn.create({
                 data: {
                     userId: trustedUser.id,
-                    accountId: trustedUser.realBankAccounts.id
+                    accountId: realBank.id
                 }
             }) 
             console.log("Trusted user: ", trustedUser);
@@ -81,6 +88,7 @@ const trustedEntity = async () => {
                 userId: trustedUser.id,
               },
             });
+            console.log(`Created user: ${trustedUser.fullName} with XRP account.`);
         } else {
             console.log("Trusted user already exists");
         }
