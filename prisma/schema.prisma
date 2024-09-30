@@ -80,6 +80,7 @@ model Offer {
   durationToReturn Int
   status         String
   userId         Int
+  offered          Borrowed[]
   user           User      @relation(fields: [userId], references: [id], onDelete: Cascade) 
 }
 
@@ -87,7 +88,9 @@ model Borrowed {
   id             Int       @id @default(autoincrement())
   status         String
   userId         Int?
+  offerId        Int?
   user           User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  offer           Offer?     @relation(fields: [offerId], references: [id], onDelete: SetNull)
 }
 
 model Account {

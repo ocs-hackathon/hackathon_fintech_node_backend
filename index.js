@@ -21,6 +21,7 @@ const createTLTransfer = require('./routes/createTLTransfer');
 const user = require('./routes/user');
 const offer = require('./routes/offer');
 const admin = require('./routes/admin');
+const loan = require('./routes/loan')
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -52,6 +53,7 @@ app.use('/trustline', createTLTransfer);
 app.use('/user', user);
 app.use('/offer', offer);
 app.use('/admin', admin);
+app.use('/loan', loan)
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}/`);
