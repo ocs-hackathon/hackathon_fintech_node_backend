@@ -239,4 +239,109 @@ const getLoans = async (req, res) => {
     }
 }
 
-module.exports = { createLoanAndManageCurrency };
+const payBack = async (req, res) => {
+    const userId = req.user.id
+    
+    try {
+
+        const user = await prisma.user.findUnique({
+            where:{ id: userId }
+        })
+        const trustedEntity = await prisma.user.findUnique({
+            where:{ email: "trustedEntity@test.com" }
+        }) 
+        if (user.activeLoan === false) {
+            res.json({msg: "user doesn't have an active loan"})
+        }
+        const borrowed = await prisma.borrowed.findMany({
+            where: {
+              userId: parseInt(userId)
+            },
+            include: {
+              offer: true 
+            }
+          });
+        
+        const amount = borrowed.offer.amount
+
+        const userAccount = await prisma.account.findFirst({ 
+            where: { userId: user.id }
+        });
+
+        const trustedEntityAccount = await prisma.account.findFirst({ where: { userId: trustedEntity.id } });
+
+        const userSeed = decryptSeed(userAccount.encryptedSeed, userAccount.seedIv);
+        
+        const trustedEntitySeed = decryptSeed(trustedEntityAccount.encryptedSeed, trustedEntityAccount.seedIv);
+
+        const userWallet = xrpl.Wallet.fromSeed(userSeed);
+        const trustedEntityWallet = xrpl.Wallet.fromSeed(trustedEntitySeed);
+        const client = new xrpl.Client('wss://s.altnet.rippletest.net:51233');
+        await client.connect();
+
+        await sendIssuedCurrency(client, userWallet, trustedEntityWallet, 'ETB', amount);
+
+        await saveTransaction(user.id, trustedEntity.id, 'Payment', parseFloat(amount));
+        const loan = await prisma.borrowed.create({
+            data: {
+                status: "payed",
+                userId: user.id,
+                offerId: offer.id
+            }
+        });
+
+        await prisma.realBankAccount.updateMany({
+            where: { userId: user.id },
+            data: { balanceETB: { decrement: parseFloat(amount) } }
+        });
+
+        await prisma.realBankAccount.updateMany({
+            where: { userId: trustedEntity.id },
+            data: { balanceETB: { increment: parseFloat(amount) } }
+        });
+
+        await prisma.offer.update({
+            where: { id: offerId },
+            data: { status: 'payed' }
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        const trustedBalance = await client.getXrpBalance(trustedEntityWallet.address);
+        const userBalance = await client.getXrpBalance(userWallet.address);
+
+        await Promise.all([
+            prisma.account.update({
+                where: { userId: user.id },
+                data: {
+                    xrpBalance: parseFloat(userBalance),
+                    issuedCurrencyBalance: { decrement: parseFloat(amount) }
+                }
+            }),
+            prisma.account.update({
+                where: { userId: trustedEntity.id },
+                data: {
+                    xrpBalance: parseFloat(trustedBalance),
+                    issuedCurrencyBalance: { increment: parseFloat(amount) }
+                }
+            })
+        ]);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data:{
+                activeLoan: false,
+            }
+        })
+
+        await client.disconnect();
+
+        return res.status(200).json({ message: 'Loan paid back successfully.' });
+
+    } catch (error) {
+        
+    }
+}
+
+module.exports = { createLoanAndManageCurrency, getLoans, payBack };
