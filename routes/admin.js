@@ -1,9 +1,10 @@
 const express = require('express');
 const { createAdmin, dashboard } = require('../controllers/admin');
+const authenticateToken = require('../middleware/authenticate');
 
 const router = express.Router()
 
 router.post('/createAdmin', createAdmin)
-router.get('/dashboard', dashboard)
+router.get('/dashboard', authenticateToken, dashboard)
 
 module.exports = router;
