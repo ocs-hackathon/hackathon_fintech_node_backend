@@ -49,6 +49,14 @@ const signIn = async (req, res) => {
       return res.json({ errors: { password: "Incorrect password" } });
     }
 
+    if (user.status === "pending") {
+      res.json({msg: "user not verified"})
+    }
+
+    if (user.status === "blocked"){
+      res.json({msg:"user blocked"})
+    }
+
     const accessToken = createAccessToken(user);
 
     res.json({

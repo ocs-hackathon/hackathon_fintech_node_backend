@@ -99,7 +99,8 @@ const dashboard = async (req, res) => {
     res.json({
       users,
       offers,
-      loans
+      loans,
+      ok: true
     });
   } catch (error) {
     console.error(error);

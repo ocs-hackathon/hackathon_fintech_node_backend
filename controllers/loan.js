@@ -218,4 +218,25 @@ const createLoanAndManageCurrency = async (req, res) => {
     }
 };
 
+const getLoans = async (req, res) => {
+    const userId = req.user.id;
+    
+    try {
+        const loans = await prisma.borrowed.findMany({
+            where:{
+                userId: userId
+            }
+        })
+    
+        if (!loans) {
+            res.json({msg: "no loans taken"})
+        }
+    
+        res.json(loans)
+    } catch (error) {
+        console.log("error: ", error);
+        
+    }
+}
+
 module.exports = { createLoanAndManageCurrency };
