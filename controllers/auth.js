@@ -41,9 +41,12 @@ const signIn = async (req, res) => {
     const user = await prisma.user.findUnique({
       where: { email },
     });
+    if (!user) {
+      return res.json({ errors: { email: "Invalid email" } });
+    }
 
-    if (!user || !(await verifyPassword(password, user.password))) {
-      return res.json({ error: "Invalid email or password" });
+    if (!(await verifyPassword(password, user.password))) {
+      return res.json({ errors: { password: "Incorrect password" } });
     }
 
     const accessToken = createAccessToken(user);

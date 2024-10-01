@@ -29,7 +29,7 @@ const sendEmail = async (email, username, temporaryPassword) => {
   const messageText = `Hello ${username},\n\nCongratulations! Your account has been approved. Your temporary password is: ${temporaryPassword}\n\nBest regards,\nIncluFi`;
 
   const mailOptions = {
-    from: "nahom6297@gmail.com",
+    from: "exopain2930@gmail.com",
     to: email,
     subject: subject,
     text: messageText,
@@ -85,4 +85,27 @@ const createAdmin = async (req, res) => {
   }
 };
 
-module.exports = { createAdmin };
+const dashboard = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.json({ ok: false });
+    }
+    const [users, offers, loans] = await Promise.all([
+      prisma.user.findMany(),
+      prisma.offer.findMany(),
+      prisma.borrowed.findMany()
+    ]);
+
+    res.json({
+      users,
+      offers,
+      loans
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while fetching the data.' });
+  }
+};
+
+
+module.exports = { createAdmin, dashboard };

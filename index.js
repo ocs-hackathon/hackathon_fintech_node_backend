@@ -22,6 +22,7 @@ const user = require('./routes/user');
 const offer = require('./routes/offer');
 const admin = require('./routes/admin');
 const loan = require('./routes/loan')
+const auth = require('./routes/auth')
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -47,6 +48,7 @@ app.get('/', (req, res) => {
   console.log(req);
 });
 
+app.use('/auth', auth)
 app.use('/account', account);
 app.use('/transaction', transaction);
 app.use('/trustline', createTLTransfer);
