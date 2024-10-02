@@ -84,4 +84,29 @@ const sendXRP = async (req, res) => {
   }
 };
 
-module.exports = { sendXRP };
+const transactHistory = async (req,res) => {
+
+  const userId = req.user.id
+
+  try {
+    const Transactions = await prisma.transaction.findMany({
+      where: {
+        OR: [
+          {receiverId: userId},
+          {senderId: userId}
+        ]
+      }
+    })
+
+    if (!Transactions) {
+      res.json({msg: "No transactions made"})
+    }
+
+    res.json(Transactions)
+  } catch (error) {
+    console.log("error: ", error);
+    
+  }
+}
+
+module.exports = { sendXRP, transactHistory };

@@ -89,8 +89,10 @@ async function saveTransaction(senderId, receiverId, transactionType, amount) {
     });
 }
 
+//trusted entity logic change
 const createLoanAndManageCurrency = async (req, res) => {
     try {
+
         const offerId = parseInt(req.params.id);
         const id = req.user.id
 
@@ -262,6 +264,10 @@ const payBack = async (req, res) => {
             }
           });
         
+        if (borrowed.status === "paid") {
+            res.json({msg: "loan already paid"})
+        }
+        
         const amount = borrowed.offer.amount
 
         const userAccount = await prisma.account.findFirst({ 
@@ -284,7 +290,7 @@ const payBack = async (req, res) => {
         await saveTransaction(user.id, trustedEntity.id, 'Payment', parseFloat(amount));
         const loan = await prisma.borrowed.create({
             data: {
-                status: "payed",
+                status: "paid",
                 userId: user.id,
                 offerId: offer.id
             }
@@ -302,7 +308,7 @@ const payBack = async (req, res) => {
 
         await prisma.offer.update({
             where: { id: offerId },
-            data: { status: 'payed' }
+            data: { status: 'paid' }
         });
 
         await new Promise(resolve => setTimeout(resolve, 2000));

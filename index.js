@@ -15,6 +15,7 @@ const corsOptions = {
 // Importing seed functions and routes
 const seedUser = require('./seeds/seedUser');
 const trustedEntity = require('./seeds/trustedEntity');
+const seedOffer = require('./seeds/seedOffer')
 const account = require('./routes/accountRoutes');
 const transaction = require('./routes/transaction');
 const createTLTransfer = require('./routes/createTLTransfer');
@@ -31,6 +32,8 @@ const initializeData = async () => {
     await trustedEntity();
     await delay(2000);
     await seedUser();
+    await delay(2000);
+    await seedOffer();
   } catch (error) {
     console.error('Error during seeding:', error);
   }

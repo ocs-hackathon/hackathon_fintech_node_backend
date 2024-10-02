@@ -68,6 +68,8 @@ model RealBankAccount {
   accountNumber  String?  @unique
   bankName       String?
   balanceETB     Decimal  @default(100000.0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
   userId         Int?     
   user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   adminsBank     AdminConn[]
@@ -80,6 +82,8 @@ model Offer {
   durationToReturn Int
   status         String
   userId         Int
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
   offered          Borrowed[]
   user           User      @relation(fields: [userId], references: [id], onDelete: Cascade) 
 }
@@ -89,6 +93,8 @@ model Borrowed {
   status         String
   userId         Int?
   offerId        Int?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
   user           User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
   offer           Offer?     @relation(fields: [offerId], references: [id], onDelete: SetNull)
 }
@@ -102,6 +108,8 @@ model Account {
   seedIv             String
   xrpBalance         Float     @default(0.0)
   issuedCurrencyBalance Float  @default(0.0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
   userId             Int       @unique
   user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -138,7 +146,7 @@ model PasswordStatus {
 model ResetToken {
   id     Int     @id @default(autoincrement())
   token  String  @unique
-  expiry DateTime
+  expiry DateTime @default(now())
   userId Int
   user   User    @relation(fields: [userId], references: [id])
 }

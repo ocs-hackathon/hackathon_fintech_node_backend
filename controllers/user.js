@@ -113,4 +113,33 @@ const blockUser = async (req,res) => {
   res.status(200).json(user);
 }
 
-module.exports = { fetchAllUsers, registerUser, blockUser, submitKYC };
+const dashboard = async (req, res) => {
+  try {
+    if (req.user.status === 'pending') {
+      return res.json({ msg: "User not verified yet", ok: false });
+    }
+
+    if (req.user.status === "blocked") {
+      return res.json({msg: "User is blocked", ok: false})
+    }
+    const [offers, loans] = await Promise.all([
+      prisma.offer.findMany(),
+      prisma.borrowed.findMany({
+        where:{
+          userId:req.user.id
+        }
+      })
+    ]);
+
+    res.json({
+      offers,
+      loans,
+      ok: true
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while fetching the data.' });
+  }
+}; 
+
+module.exports = { fetchAllUsers, registerUser, blockUser, submitKYC, dashboard };
