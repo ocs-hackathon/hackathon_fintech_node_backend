@@ -114,13 +114,22 @@ const blockUser = async (req,res) => {
 }
 
 const dashboard = async (req, res) => {
+
+  const userId = req.user.id
+
   try {
+    
+    const user = await prisma.user.findUnique({
+      where:{
+        id: userId
+      }
+    })
     if (req.user.status === 'pending') {
-      return res.json({ msg: "User not verified yet", ok: false });
+      return res.json({ msg: "User not verified yet", ok: false, user });
     }
 
     if (req.user.status === "blocked") {
-      return res.json({msg: "User is blocked", ok: false})
+      return res.json({msg: "User is blocked", ok: false, user})
     }
     const [offers, loans] = await Promise.all([
       prisma.offer.findMany(),
@@ -132,6 +141,7 @@ const dashboard = async (req, res) => {
     ]);
 
     res.json({
+      user,
       offers,
       loans,
       ok: true

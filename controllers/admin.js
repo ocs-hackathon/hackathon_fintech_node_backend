@@ -25,7 +25,7 @@ const sendEmail = async (email, username, temporaryPassword) => {
     },
   });
 
-  const subject = "Your Account Has Been Approved";
+  const subject = "Your Account Has Been Created";
   const messageText = `Hello ${username},\n\nCongratulations! Your account has been approved. Your temporary password is: ${temporaryPassword}\n\nBest regards,\nIncluFi`;
 
   const mailOptions = {
