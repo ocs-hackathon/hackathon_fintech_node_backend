@@ -4,7 +4,7 @@ const authenticateToken = require('../middleware/authenticate');
 
 const router = express.Router()
 
-router.post('/createAdmin', createAdmin)
+router.post('/createAdmin', authenticateToken, createAdmin)
 router.get('/dashboard', authenticateToken, dashboard)
 
 module.exports = router;

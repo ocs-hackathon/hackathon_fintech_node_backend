@@ -150,7 +150,7 @@ const createLoanAndManageCurrency = async (req, res) => {
 
         await saveTransaction(user.id, trustedEntity.id, 'Payment', parseFloat(amount));
 
-        const loan = await prisma.borrowed.create({
+        await prisma.borrowed.create({
             data: {
                 status: "active",
                 userId: user.id,
@@ -257,7 +257,8 @@ const payBack = async (req, res) => {
         }
         const borrowed = await prisma.borrowed.findMany({
             where: {
-              userId: parseInt(userId)
+              userId: parseInt(userId),
+              status: "active"
             },
             include: {
               offer: true 
