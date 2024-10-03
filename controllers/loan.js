@@ -269,7 +269,7 @@ const payBack = async (req, res) => {
             res.json({msg: "loan already paid"})
         }
         
-        const amount = borrowed.offer.amount
+        const amount = borrowed[0].offer.amount
 
         const userAccount = await prisma.account.findFirst({ 
             where: { userId: user.id }
@@ -310,7 +310,7 @@ const payBack = async (req, res) => {
         });
 
         await prisma.offer.update({
-            where: { id: borrowed.offer.id },
+            where: { id: borrowed[0].offer.id },
             data: { status: 'paid' }
         });
 
