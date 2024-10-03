@@ -128,14 +128,26 @@ const dashboard = async (req, res) => {
       }
     })
     if (req.user.status === 'pending') {
-      return res.json({ msg: "User not verified yet", ok: false, user });
+
+      const kycTemp = await prisma.kYCTemp.findUnique({
+        where: {userId: userId}
+      })
+
+      if (!kycTemp) {
+        return res.json({ msg: "User not verified yet", ok: false, user });
+      }
+       return res.json({kycTemp,user})
     }
 
     if (req.user.status === "blocked") {
       return res.json({msg: "User is blocked", ok: false, user})
     }
     const [offers, loans] = await Promise.all([
-      prisma.offer.findMany(),
+      prisma.offer.findMany({
+        where: {
+          status: "active"
+        }
+      }),
       prisma.borrowed.findMany({
         where:{
           userId:req.user.id
