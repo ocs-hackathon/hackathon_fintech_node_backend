@@ -24,7 +24,8 @@ const submitKYC = async (req, res) => {
       return res.status(500).json({ message: "File upload failed", error: err });
     }
 
-    const { fullName, address, phoneNumber, accountNumber, bankName, userId } = req.body;
+    const { fullName, address, phoneNumber, accountNumber, bankName } = req.body;
+    const userId = req.user.id
 
     const idFile = req.files.idFile ? req.files.idFile[0].path : null;
     const bankStatement = req.files.bankStatement ? req.files.bankStatement[0].path : null;

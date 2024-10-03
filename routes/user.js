@@ -9,6 +9,6 @@ router.get('/fetchUsers', fetchAllUsers);
 router.put('/blockUser/:id', blockUser);
 router.get('/dashboard', authenticateToken, dashboard);
 router.get('/profile', getUserProfile)
-router.post('/setKyc', submitKYC)
+router.post('/setKyc', authenticateToken, submitKYC)
 
 module.exports = router;
