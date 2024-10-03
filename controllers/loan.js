@@ -289,11 +289,13 @@ const payBack = async (req, res) => {
         await sendIssuedCurrency(client, userWallet, trustedEntityWallet, 'ETB', amount);
 
         await saveTransaction(user.id, trustedEntity.id, 'Payment', parseFloat(amount));
-        const loan = await prisma.borrowed.create({
+       await prisma.borrowed.updateMany({
+            where: {
+                userId: userId,
+                status: "active",
+            },
             data: {
                 status: "paid",
-                userId: user.id,
-                offerId: offer.id
             }
         });
 
@@ -308,7 +310,7 @@ const payBack = async (req, res) => {
         });
 
         await prisma.offer.update({
-            where: { id: offerId },
+            where: { id: borrowed.offer.id },
             data: { status: 'paid' }
         });
 
