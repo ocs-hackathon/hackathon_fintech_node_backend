@@ -2,6 +2,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const multer = require("multer");
 const { hashPassword } = require("../utils/passwordUtils");
+const path = require('path')
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -70,6 +71,7 @@ const registerUser = async (req, res) => {
         password: hashedPassword,
         status: "pending",
         creditScore: 100,
+        role: 'client',
       },
     });
 
@@ -150,6 +152,52 @@ const dashboard = async (req, res) => {
     console.error(error);
     res.status(500).json({ message: 'An error occurred while fetching the data.' });
   }
-}; 
+};
 
-module.exports = { fetchAllUsers, registerUser, blockUser, submitKYC, dashboard };
+const getUserProfile = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Fetch the user by ID
+    const user = await prisma.user.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        offers: true,
+        borrowings: true,
+        account: true,
+        transactionsSent: true,
+        transactionsReceived: true,
+        issuedSender: true,
+        issuedReceiver: true,
+        resetPass: true,
+        passwordStat: true,
+        realBankAccounts: true,
+        tempKYC: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Get file paths for ID file and bank statement
+    const idFilePath = user.idFile ? path.join(__dirname, '../uploads', user.idFile) : null;
+    const bankStatementPath = user.bankStatement ? path.join(__dirname, '../uploads', user.bankStatement) : null;
+
+    // Check if ID file and bank statement exist
+    if (idFilePath && fs.existsSync(idFilePath)) {
+      res.writeHead(200, { 'Content-Type': 'application/pdf' });
+      fs.createReadStream(idFilePath).pipe(res);
+    } else if (bankStatementPath && fs.existsSync(bankStatementPath)) {
+      res.writeHead(200, { 'Content-Type': 'application/pdf' });
+      fs.createReadStream(bankStatementPath).pipe(res);
+    } else {
+      // If both files don't exist, return user profile data without files
+      res.json({ user });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching user profile', error });
+  }
+};
+
+module.exports = { fetchAllUsers, registerUser, blockUser, submitKYC, dashboard, getUserProfile };

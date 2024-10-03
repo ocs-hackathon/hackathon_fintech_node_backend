@@ -17,13 +17,17 @@ const sendEmail = async (email, username, temporaryPassword) => {
 
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
+    port: 587,
+    secure: false,
     auth: {
-      user: "exopain2930@gmail.com",
-      pass: process.env.EMAIL_PASSWORD,
+        user: "exopain2930@gmail.com",
+        pass: process.env.EMAIL_PASSWORD,
+    },
+    tls: {
+        rejectUnauthorized: false,
     },
   });
+
 
   const subject = "Your Account Has Been Created";
   const messageText = `Hello ${username},\n\nCongratulations! Your account has been approved. Your temporary password is: ${temporaryPassword}\n\nBest regards,\nIncluFi`;

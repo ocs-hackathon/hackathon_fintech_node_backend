@@ -2,7 +2,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 const createOffer = async (req, res) => {
-  const userId = 1;
+  const userId = req.user.id;
   const amount = parseFloat(req.body.amount);
   const  durationToReturn = parseFloat(req.body.durationToReturn)
   const interestRate = parseFloat(req.body.interestRate)
