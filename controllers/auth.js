@@ -81,63 +81,81 @@ const updateUserStatus = async (req, res) => {
 
     const isAccepted = message.toLowerCase() === "accept";
 
+    // When User is accepted
     if (isAccepted) {
       const kycTemp = await prisma.kYCTemp.findFirst({ where: { userId } });
 
       if (!kycTemp) {
-        const updateUser = await prisma.user.update({
-          where: {id: userId},
-          data: {status: "active"}
-        })
+        // If KYC is missing, just activate the user
+        const updatedUser = await prisma.user.update({
+          where: { id: userId },
+          data: { status: "active" },
+        });
 
-        res.json({msg: "User status updated."})
+        return res.status(200).json({
+          message: "User status updated successfully (No KYC), account activated.",
+          user: updatedUser,
+        });
+      } else {
+        // If KYC exists, activate the user and transfer KYC data
+        const updatedUser = await prisma.user.update({
+          where: { id: userId },
+          data: {
+            fullName: kycTemp.fullName,
+            address: kycTemp.address,
+            phoneNumber: kycTemp.phoneNumber,
+            idFile: kycTemp.idFile,
+            bankStatement: kycTemp.bankStatement,
+            status: "active",
+            balanceETB: 100000, // Default balance
+          },
+        });
+
+        await prisma.realBankAccount.create({
+          data: {
+            accountNumber: kycTemp.accountNumber,
+            bankName: kycTemp.bankName,
+            userId: userId,
+          },
+        });
+
+        await sendEmail(user.email, user.fullName, true);
+
+        await prisma.kYCTemp.delete({ where: { userId } });
+
+        return res.status(200).json({
+          message: "User status updated successfully, KYC data applied, approval email sent.",
+          user: updatedUser,
+        });
       }
+    }
 
+    // When User is rejected
+    else {
       const updatedUser = await prisma.user.update({
-        where: { id: userId },
-        data: {
-          fullName: kycTemp.fullName,
-          address: kycTemp.address,
-          phoneNumber: kycTemp.phoneNumber,
-          idFile: kycTemp.idFile,
-          bankStatement: kycTemp.bankStatement,
-          status: "active",
-          balanceETB: 100000, // Default balance
-        },
-      });
-
-      await prisma.realBankAccount.create({
-        data: {
-          accountNumber: kycTemp.accountNumber,
-          bankName: kycTemp.bankName,
-          userId: userId,
-        },
-      });
-
-      await sendEmail(user.email, user.fullName, true);
-
-      await prisma.kYCTemp.delete({ where: { userId } });
-
-      return res.status(200).json({
-        message: "User status updated successfully, approval email sent, and account created.",
-        user: updatedUser,
-      });
-    } else {
-      await prisma.user.update({
         where: { id: userId },
         data: {
           status: "rejected",
         },
       });
 
-      await sendEmail(user.email, user.fullName, false);
-      return res.status(200).json({ message: "User rejected, email sent." });
+      const kycTemp = await prisma.kYCTemp.findFirst({ where: { userId } });
+
+      if (kycTemp) {
+        // If KYC is found, send rejection email
+        await sendEmail(user.email, user.fullName, false);
+      }
+
+      return res.status(200).json({
+        message: kycTemp
+          ? "User rejected, rejection email sent."
+          : "User rejected, no KYC data found, no email sent.",
+      });
     }
   } catch (error) {
     console.error("Error updating user status:", error);
     res.status(500).json({ message: "Failed to update user status", error });
   }
 };
-
 
 module.exports = { updateUserStatus, signIn}
