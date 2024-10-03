@@ -3,7 +3,6 @@ const prisma = new PrismaClient();
 const { verifyPassword } = require("../utils/passwordUtils");
 const { createAccessToken } = require("../utils/authUtils");
 const nodemailer = require("nodemailer");
-const { faker } = require('@faker-js/faker');
 
 const sendEmail = async (email, username, isApproved) => {
   const transporter = nodemailer.createTransport({
@@ -68,14 +67,6 @@ const signIn = async (req, res) => {
 const updateUserStatus = async (req, res) => {
   const { message } = req.body;
   const userId = parseInt(req.params.id);
-
-  const fullName = faker.person.fullName();
-  const email = faker.internet.email(fullName.split(" ")[0]);
-  const password = await hashPassword(`password${i}`);
-  const address = faker.location.streetAddress();
-  const phoneNumber = faker.phone.number();
-  const idFile = "uploads/idFile2.pdf";
-  const bankStatement = "uploads/bankStatement2.pdf";
 
   if (!message || !userId) {
     return res.status(400).json({ message: "User ID and message are required." });
